@@ -1,14 +1,27 @@
 {
-  "servers": {
-    "kratos-sppr": {
-      "type": "stdio",
-      "command": "D:\\TESS Export System\\Kratos\\.venv\\Scripts\\python.exe",
-      "args": [
-        "D:\\TESS Export System\\Kratos\\mcp_server.py"
-      ],
-      "env": {
-        "KRATOS_API_URL": "https://твой-проект.vercel.app"
-      }
+  "version": 2,
+  "builds": [
+    {
+      "src": "api/index.py",
+      "use": "@vercel/python"
+    },
+    {
+      "src": "public/**",
+      "use": "@vercel/static"
     }
-  }
+  ],
+  "routes": [
+    {
+      "src": "/api/(.*)",
+      "dest": "api/index.py"
+    },
+    {
+      "src": "/",
+      "dest": "public/index.html"
+    },
+    {
+      "src": "/(.*)",
+      "dest": "public/$1"
+    }
+  ]
 }
