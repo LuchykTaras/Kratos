@@ -1,0 +1,926 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>СППР: Проєктування та верифікація архітектур нейромереж</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+        }
+
+        body {
+            background-color: #0b1120;
+            color: #e2e8f0;
+            line-height: 1.5;
+            padding: 24px 16px 60px;
+        }
+
+        .container {
+            max-width: 1240px;
+            margin: 0 auto;
+        }
+
+        header {
+            margin-bottom: 24px;
+        }
+
+        header h1 {
+            font-size: 1.65rem;
+            font-weight: 700;
+            color: #f8fafc;
+            margin-bottom: 4px;
+        }
+
+        .subtitle {
+            color: #94a3b8;
+            font-size: 0.92rem;
+            margin-bottom: 16px;
+        }
+
+        .tabs {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .tab-btn {
+            background: #1e293b;
+            color: #cbd5e1;
+            border: 1px solid #334155;
+            padding: 9px 18px;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .tab-btn:hover {
+            background: #273549;
+            color: #ffffff;
+        }
+
+        .tab-btn.active {
+            background: #2563eb;
+            color: #ffffff;
+            border-color: #3b82f6;
+            box-shadow: 0 4px 14px rgba(37, 99, 235, 0.35);
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            align-items: start;
+        }
+
+        @media (max-width: 960px) {
+            .grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .card {
+            background: #131c31;
+            border: 1px solid #1e293b;
+            border-radius: 12px;
+            padding: 22px;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25);
+        }
+
+        .card h2 {
+            font-size: 1.15rem;
+            font-weight: 700;
+            color: #f8fafc;
+            margin-bottom: 16px;
+        }
+
+        .card h3 {
+            font-size: 0.78rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+            color: #38bdf8;
+            margin: 16px 0 10px;
+        }
+
+        .input-group {
+            margin-bottom: 14px;
+        }
+
+        .input-group label {
+            display: block;
+            font-size: 0.85rem;
+            color: #cbd5e1;
+            margin-bottom: 6px;
+        }
+
+        textarea,
+        input[type="text"],
+        input[type="number"],
+        select {
+            width: 100%;
+            background: #0b1120;
+            border: 1px solid #334155;
+            border-radius: 8px;
+            color: #f1f5f9;
+            padding: 10px 12px;
+            font-size: 0.9rem;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+
+        textarea:focus,
+        input:focus,
+        select:focus {
+            border-color: #3b82f6;
+        }
+
+        .row-inputs {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+        }
+
+        .row-inputs-3 {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 10px;
+        }
+
+        .slider-group {
+            margin-bottom: 12px;
+        }
+
+        .slider-group label {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.85rem;
+            color: #e2e8f0;
+            margin-bottom: 4px;
+        }
+
+        .slider-group label span {
+            font-weight: 700;
+            color: #f8fafc;
+        }
+
+        input[type="range"] {
+            width: 100%;
+            accent-color: #3b82f6;
+            cursor: pointer;
+        }
+
+        .primary-btn {
+            width: 100%;
+            background: #2563eb;
+            color: #ffffff;
+            border: none;
+            border-radius: 8px;
+            padding: 12px 16px;
+            font-size: 0.95rem;
+            font-weight: 600;
+            cursor: pointer;
+            margin-top: 8px;
+            transition: background 0.2s;
+        }
+
+        .primary-btn:hover {
+            background: #1d4ed8;
+        }
+
+        .primary-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .secondary-btn {
+            width: 100%;
+            background: #1e293b;
+            color: #f8fafc;
+            border: 1px solid #3b82f6;
+            border-radius: 8px;
+            padding: 10px 14px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .secondary-btn:hover {
+            background: #2563eb;
+        }
+
+        .metric-box {
+            background: #0b1120;
+            border: 1px solid #1e293b;
+            border-radius: 10px;
+            padding: 18px;
+            margin-bottom: 16px;
+        }
+
+        .metric-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 14px;
+            font-size: 0.95rem;
+            color: #cbd5e1;
+        }
+
+        .sing-score {
+            font-size: 1.75rem;
+            font-weight: 800;
+            color: #3b82f6;
+        }
+
+        .scale-labels {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.75rem;
+            color: #94a3b8;
+            margin-bottom: 6px;
+        }
+
+        .scale-bar {
+            position: relative;
+            height: 10px;
+            border-radius: 999px;
+            background: linear-gradient(90deg, #ef4444 0%, #f59e0b 30%, #eab308 50%, #22c55e 75%, #10b981 100%);
+            margin-bottom: 6px;
+        }
+
+        .scale-pointer {
+            position: absolute;
+            top: -4px;
+            width: 4px;
+            height: 18px;
+            background: #ffffff;
+            border-radius: 2px;
+            box-shadow: 0 0 8px rgba(255, 255, 255, 0.9);
+            transform: translateX(-50%);
+            transition: left 0.35s ease;
+        }
+
+        .scale-ticks {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.72rem;
+            color: #64748b;
+            margin-bottom: 14px;
+        }
+
+        .verdict-banner {
+            text-align: center;
+            padding: 11px;
+            border-radius: 8px;
+            font-weight: 700;
+            font-size: 0.92rem;
+            border: 1px solid #eab308;
+            background: rgba(234, 179, 8, 0.12);
+            color: #facc15;
+        }
+
+        .verdict-banner.ideal,
+        .verdict-banner.better {
+            border-color: #10b981;
+            background: rgba(16, 185, 129, 0.14);
+            color: #34d399;
+        }
+
+        .verdict-banner.neutral {
+            border-color: #eab308;
+            background: rgba(234, 179, 8, 0.12);
+            color: #facc15;
+        }
+
+        .verdict-banner.worse,
+        .verdict-banner.critical {
+            border-color: #ef4444;
+            background: rgba(239, 68, 68, 0.14);
+            color: #f87171;
+        }
+
+        .audit-box,
+        .trace-box {
+            background: #0b1120;
+            border: 1px solid #1e293b;
+            border-radius: 10px;
+            padding: 16px;
+            margin-bottom: 14px;
+        }
+
+        .audit-box h3,
+        .trace-box h3 {
+            margin-top: 0;
+            margin-bottom: 8px;
+        }
+
+        .audit-text {
+            font-size: 0.88rem;
+            color: #cbd5e1;
+            margin-bottom: 12px;
+        }
+
+        .audit-meta {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.82rem;
+            color: #94a3b8;
+            border-top: 1px solid #1e293b;
+            padding-top: 10px;
+        }
+
+        .trace-box ul {
+            padding-left: 18px;
+            font-size: 0.88rem;
+            color: #cbd5e1;
+        }
+
+        .trace-box li {
+            margin-bottom: 6px;
+        }
+
+        .blueprint-card {
+            margin-top: 20px;
+        }
+
+        .blueprint-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 16px;
+        }
+
+        .blueprint-header h2 {
+            margin-bottom: 4px;
+        }
+
+        .arch-subtitle {
+            color: #38bdf8;
+            font-size: 0.92rem;
+            font-weight: 600;
+        }
+
+        .badge {
+            background: #172554;
+            color: #60a5fa;
+            border: 1px solid #1d4ed8;
+            padding: 6px 12px;
+            border-radius: 8px;
+            font-size: 0.82rem;
+            font-weight: 600;
+        }
+
+        .blueprint-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+        }
+
+        @media (max-width: 960px) {
+            .blueprint-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .diagram-container,
+        .blueprint-spec {
+            background: #0b1120;
+            border: 1px solid #1e293b;
+            border-radius: 10px;
+            padding: 16px;
+            min-height: 210px;
+        }
+
+        .blueprint-spec {
+            color: #94a3b8;
+            font-family: Consolas, Monaco, monospace;
+            font-size: 0.8rem;
+            overflow-x: auto;
+            white-space: pre;
+        }
+
+        .placeholder-text {
+            color: #64748b;
+            text-align: center;
+            padding: 60px 10px;
+            font-size: 0.9rem;
+        }
+
+        .layer-node {
+            background: #131c31;
+            border: 1px solid #334155;
+            border-left: 4px solid #3b82f6;
+            border-radius: 8px;
+            padding: 10px 14px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .layer-name {
+            font-weight: 700;
+            font-size: 0.88rem;
+            color: #f8fafc;
+        }
+
+        .layer-type {
+            font-size: 0.78rem;
+            color: #94a3b8;
+        }
+
+        .layer-meta {
+            text-align: right;
+            font-size: 0.78rem;
+        }
+
+        .layer-shape {
+            display: block;
+            color: #38bdf8;
+            font-family: monospace;
+        }
+
+        .layer-params {
+            color: #10b981;
+            font-weight: 600;
+        }
+
+        .layer-arrow {
+            text-align: center;
+            color: #64748b;
+            font-size: 1rem;
+            margin: 4px 0;
+        }
+
+        /* ЧАСТИНА 2 */
+        .part2-section {
+            margin-top: 4px;
+        }
+
+        .part2-banner {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 12px;
+            margin-bottom: 18px;
+        }
+
+        .part2-title-group {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .part2-pill {
+            background: #2563eb;
+            color: #ffffff;
+            font-size: 0.8rem;
+            font-weight: 700;
+            padding: 5px 12px;
+            border-radius: 999px;
+            text-transform: uppercase;
+        }
+
+        .hint-text {
+            font-size: 0.85rem;
+            color: #94a3b8;
+            margin-bottom: 14px;
+        }
+
+        .action-toolbar {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            margin-bottom: 16px;
+        }
+
+        .tool-btn {
+            background: #1e293b;
+            color: #e2e8f0;
+            border: 1px solid #334155;
+            border-radius: 8px;
+            padding: 8px 14px;
+            font-size: 0.84rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .tool-btn:hover {
+            background: #334155;
+        }
+
+        .tool-btn.danger {
+            border-color: #7f1d1d;
+            color: #fca5a5;
+        }
+
+        .tool-btn.danger:hover {
+            background: #991b1b;
+            color: #ffffff;
+        }
+
+        .sub-box {
+            background: #0b1120;
+            border: 1px solid #1e293b;
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 14px;
+        }
+
+        .sub-box h3 {
+            margin-top: 0;
+        }
+
+        .slots-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+
+        .clips-log {
+            background: #060a14;
+            border: 1px solid #1e293b;
+            border-radius: 6px;
+            padding: 10px 12px;
+            font-family: Consolas, Monaco, monospace;
+            font-size: 0.8rem;
+            color: #34d399;
+            max-height: 130px;
+            overflow-y: auto;
+        }
+
+        .stats-strip {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            margin-bottom: 14px;
+        }
+
+        .stat-mini-card {
+            background: #0b1120;
+            border: 1px solid #1e293b;
+            border-radius: 8px;
+            padding: 10px;
+            text-align: center;
+        }
+
+        .stat-mini-num {
+            font-size: 1.25rem;
+            font-weight: 800;
+            color: #38bdf8;
+        }
+
+        .stat-mini-lbl {
+            font-size: 0.74rem;
+            color: #94a3b8;
+        }
+
+        .facts-visual-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+            gap: 12px;
+        }
+
+        .fact-card {
+            background: #0b1120;
+            border: 1px solid #1e293b;
+            border-left: 4px solid #3b82f6;
+            border-radius: 10px;
+            padding: 13px;
+            transition: transform 0.15s ease, border-color 0.15s ease;
+        }
+
+        .fact-card:hover {
+            transform: translateY(-2px);
+            border-color: #60a5fa;
+        }
+
+        .fact-card.tpl-tz_requirement {
+            border-left-color: #f59e0b;
+        }
+
+        .fact-card.tpl-hardware_constraint {
+            border-left-color: #10b981;
+        }
+
+        .fact-card-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+            gap: 6px;
+        }
+
+        .fact-id-tag {
+            font-weight: 700;
+            color: #60a5fa;
+            font-size: 0.88rem;
+        }
+
+        .fact-tpl-tag {
+            font-size: 0.72rem;
+            background: #131c31;
+            color: #cbd5e1;
+            padding: 2px 7px;
+            border-radius: 4px;
+            border: 1px solid #334155;
+        }
+
+        .fact-slots-table {
+            width: 100%;
+            font-size: 0.8rem;
+            border-collapse: collapse;
+            margin-bottom: 10px;
+        }
+
+        .fact-slots-table td {
+            padding: 3px 0;
+            border-bottom: 1px dashed #1e293b;
+        }
+
+        .fact-slots-table td:first-child {
+            color: #94a3b8;
+        }
+
+        .fact-slots-table td:last-child {
+            color: #f8fafc;
+            font-weight: 600;
+            text-align: right;
+        }
+
+        .fact-card-actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 6px;
+        }
+
+        .mini-btn {
+            background: #1e293b;
+            color: #e2e8f0;
+            border: 1px solid #334155;
+            border-radius: 5px;
+            padding: 4px 9px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        .mini-btn:hover {
+            background: #334155;
+        }
+
+        .mini-btn.del {
+            color: #fca5a5;
+            border-color: #7f1d1d;
+        }
+
+        .mini-btn.del:hover {
+            background: #991b1b;
+            color: #ffffff;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Нечітка експертна система проєктування нейромереж</h1>
+            <p class="subtitle">СППР для підбору архітектури за ТЗ, нечіткого виведення (Sing-метрика) та керування базою фактів</p>
+            
+            <div class="tabs">
+                <button id="btn-part1" class="tab-btn active" onclick="focusPart(1)">Частина 1: База знань та ТЗ</button>
+                <button id="btn-part2" class="tab-btn" onclick="focusPart(2)">Частина 2: База фактів / Пам'ять</button>
+            </div>
+        </header>
+
+        <!-- ==================== ЧАСТИНА 1 ==================== -->
+        <div id="part-1-section">
+            <div class="grid">
+                <section class="card">
+                    <h2>1. Вхідні параметри та вимоги ТЗ</h2>
+
+                    <div class="input-group">
+                        <label for="tz_text">Опис Технічного Завдання (ТЗ):</label>
+                        <textarea id="tz_text" rows="3" placeholder="Опишіть задачу, цільову платформу та вимоги...">Розпізнавання облич у відеопотоці на Raspberry Pi 4 у реальному часі (затримка до 20 мс), обмежена оперативна пам'ять, висока стійкість до шумів та поганого освітлення.</textarea>
+                    </div>
+
+                    <div class="row-inputs">
+                        <div class="input-group">
+                            <label for="domain">Предметна сфера (Домен):</label>
+                            <input type="text" id="domain" value="Computer Vision (Edge / Raspberry Pi)">
+                        </div>
+                        <div class="input-group">
+                            <label for="benchmark_name">Еталонна мережа (Benchmark):</label>
+                            <select id="benchmark_name">
+                                <option value="MobileNetV3-Small">MobileNetV3-Small (CV Mobile)</option>
+                                <option value="ResNet-18">ResNet-18 (CV Standard)</option>
+                                <option value="all-MiniLM-L6-v2">all-MiniLM-L6-v2 (NLP)</option>
+                                <option value="CLIP-ViT-B/32">CLIP-ViT-B/32 (Multimodal)</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <h3>Група Y: Ефективність та швидкість (0 = низькі витрати, 100 = високі)</h3>
+                    <div class="slider-group">
+                        <label>x₁ Обчислювальна складність (FLOPs): <span id="val-x1">25</span></label>
+                        <input type="range" id="x1" min="0" max="100" value="25" oninput="updateVal('x1')">
+                    </div>
+                    <div class="slider-group">
+                        <label>x₂ Затримка виведення (Latency): <span id="val-x2">20</span></label>
+                        <input type="range" id="x2" min="0" max="100" value="20" oninput="updateVal('x2')">
+                    </div>
+                    <div class="slider-group">
+                        <label>x₃ Використання пам'яті (Memory): <span id="val-x3">30</span></label>
+                        <input type="range" id="x3" min="0" max="100" value="30" oninput="updateVal('x3')">
+                    </div>
+
+                    <h3>Група Z: Надійність та якість (0 = низька, 100 = висока)</h3>
+                    <div class="slider-group">
+                        <label>x₅ Робастність / Стійкість до шумів: <span id="val-x5">85</span></label>
+                        <input type="range" id="x5" min="0" max="100" value="85" oninput="updateVal('x5')">
+                    </div>
+                    <div class="slider-group">
+                        <label>x₇ Здатність до узагальнення: <span id="val-x7">80</span></label>
+                        <input type="range" id="x7" min="0" max="100" value="80" oninput="updateVal('x7')">
+                    </div>
+
+                    <h3>Група W: Гнучкість даних (0 = низька, 100 = висока)</h3>
+                    <div class="slider-group">
+                        <label>x₁₀ Мультимодальна інтеграція: <span id="val-x10">30</span></label>
+                        <input type="range" id="x10" min="0" max="100" value="30" oninput="updateVal('x10')">
+                    </div>
+
+                    <button id="evaluate-btn" class="primary-btn">Спроєктувати архітектуру та оцінити</button>
+                </section>
+
+                <section class="card">
+                    <h2>2. Експертний висновок та верифікація</h2>
+
+                    <div class="metric-box">
+                        <div class="metric-header">
+                            <span>Інтегральна Sing-метрика:</span>
+                            <span id="sing-value" class="sing-score">0.000</span>
+                        </div>
+                        <div class="scale-labels">
+                            <span>Критично</span>
+                            <span>Гірше</span>
+                            <span>Норма</span>
+                            <span>Краще</span>
+                            <span>SOTA</span>
+                        </div>
+                        <div class="scale-bar">
+                            <div id="scale-pointer" class="scale-pointer" style="left: 50%;"></div>
+                        </div>
+                        <div class="scale-ticks">
+                            <span>-1.0</span>
+                            <span>-0.5</span>
+                            <span>0.0</span>
+                            <span>+0.5</span>
+                            <span>+1.0</span>
+                        </div>
+                        <div id="verdict-banner" class="verdict-banner neutral">
+                            Очікування розрахунку...
+                        </div>
+                    </div>
+
+                    <div class="audit-box">
+                        <h3>Аудит доказовості та обмеженості знань</h3>
+                        <p id="audit-warning" class="audit-text">Натисніть кнопку розрахунку для перевірки правил.</p>
+                        <div class="audit-meta">
+                            <span>Частка генеративної евристики: <strong id="gen-prob">—</strong></span>
+                            <span>Дозволений поріг: <strong>50%</strong></span>
+                        </div>
+                    </div>
+
+                    <div class="trace-box">
+                        <h3>Підсистема пояснення (Слід міркувань)</h3>
+                        <ul id="reasoning-list">
+                            <li>Введіть ТЗ та параметри для отримання рекомендації і креслення.</li>
+                        </ul>
+                    </div>
+                </section>
+            </div>
+
+            <section class="card blueprint-card">
+                <div class="blueprint-header">
+                    <div>
+                        <h2>3. Проєктне креслення рекомендованої нейромережі</h2>
+                        <p id="arch-title" class="arch-subtitle">Натисніть «Спроєктувати архітектуру та оцінити» для генерації схеми</p>
+                    </div>
+                    <span id="benchmark-badge" class="badge">Рекомендований еталон: —</span>
+                </div>
+
+                <div class="blueprint-grid">
+                    <div>
+                        <h3>Графічна топологічна схема (Блок-діаграма шарів)</h3>
+                        <div id="diagram-container" class="diagram-container">
+                            <p class="placeholder-text">Графічна схема з'явиться після аналізу ТЗ...</p>
+                        </div>
+                    </div>
+
+                    <div>
+                        <h3>Текстове креслення (Специфікація тензорів та параметрів)</h3>
+                        <pre id="blueprint-spec" class="blueprint-spec"># Очікування генерації специфікації...</pre>
+                    </div>
+                </div>
+            </section>
+        </div>
+
+        <!-- ==================== ЧАСТИНА 2 (ВІДКРИВАЄТЬСЯ ВГОРІ ПРИ НАТИСКАННІ ВКЛАДКИ 2) ==================== -->
+        <div id="part-2-section" class="part2-section" style="display: none;">
+            <div class="part2-banner">
+                <div class="part2-title-group">
+                    <span class="part2-pill">Частина 2</span>
+                    <h2 style="font-size: 1.3rem; color: #f8fafc;">Графічний модуль робочої пам'яті фактів</h2>
+                </div>
+                <span id="facts-count-badge" class="badge">Активних фактів: 6</span>
+            </div>
+
+            <div class="grid">
+                <section class="card">
+                    <h2>Керування робочою пам'яттю (Операції CLIPS)</h2>
+                    <p class="hint-text">Виконання дій над базою фактів: перегляд шаблонів <code>deftemplate</code>, додавання <code>assert</code>, модифікація <code>modify</code>, вилучення <code>retract</code> та скидання <code>reset</code>.</p>
+
+                    <div class="action-toolbar">
+                        <button class="tool-btn" onclick="resetFacts()">(reset) Початкові факти</button>
+                        <button class="tool-btn danger" onclick="retractOddFacts()">(retract) Непарні</button>
+                        <button class="tool-btn danger" onclick="clearFacts()">(clear) Очистити</button>
+                    </div>
+
+                    <div class="sub-box">
+                        <h3>1. Додати новий факт (assert)</h3>
+                        <div class="input-group">
+                            <label for="fact-template">Шаблон (deftemplate):</label>
+                            <select id="fact-template" onchange="renderSlotInputs()">
+                                <option value="neural_architecture">neural_architecture (Архітектура)</option>
+                                <option value="tz_requirement">tz_requirement (Вимога ТЗ)</option>
+                                <option value="hardware_constraint">hardware_constraint (Апаратура)</option>
+                            </select>
+                        </div>
+                        <div id="dynamic-slots-container" class="slots-grid"></div>
+                        <button class="primary-btn" onclick="assertNewFact()">Виконати (assert)</button>
+                    </div>
+
+                    <div class="sub-box">
+                        <h3>2. Модифікувати існуючий факт (modify)</h3>
+                        <div class="row-inputs-3">
+                            <div class="input-group">
+                                <label for="mod-id">Індекс (num_id):</label>
+                                <input type="number" id="mod-id" value="1" min="1">
+                            </div>
+                            <div class
+<div class="input-group">
+                                <label for="mod-slot">Назва слоту:</label>
+                                <input type="text" id="mod-slot" value="latency_score" placeholder="latency_score">
+                            </div>
+                            <div class="input-group">
+                                <label for="mod-val">Нове значення:</label>
+                                <input type="text" id="mod-val" value="10" placeholder="значення">
+                            </div>
+                        </div>
+                        <button class="secondary-btn" onclick="modifyExistingFact()">Виконати (modify)</button>
+                    </div>
+
+                    <div class="sub-box" style="margin-bottom: 0;">
+                        <h3>Журнал виконаних команд (Консоль)</h3>
+                        <div id="clips-log" class="clips-log">Система готова. Завантажено початкові факти (f-1..f-6).</div>
+                    </div>
+                </section>
+
+                <section class="card">
+                    <h2>Візуалізація робочої пам'яті (facts)</h2>
+                    <p class="hint-text">Актуальний стан фактів у пам'яті експертної системи з розподілом за шаблонами:</p>
+
+                    <div class="stats-strip">
+                        <div class="stat-mini-card">
+                            <div id="stat-arch" class="stat-mini-num">4</div>
+                            <div class="stat-mini-lbl">Архітектури</div>
+                        </div>
+                        <div class="stat-mini-card">
+                            <div id="stat-tz" class="stat-mini-num" style="color: #f59e0b;">1</div>
+                            <div class="stat-mini-lbl">Вимоги ТЗ</div>
+                        </div>
+                        <div class="stat-mini-card">
+                            <div id="stat-hw" class="stat-mini-num" style="color: #10b981;">1</div>
+                            <div class="stat-mini-lbl">Апаратура</div>
+                        </div>
+                    </div>
+
+                    <div id="facts-list" class="facts-visual-grid"></div>
+                </section>
+            </div>
+        </div>
+    </div>
+
+    <script src="app.js?v=2"></script>
+</body>
+</html>
